@@ -11,34 +11,35 @@ keywords:
 
 import DocsRating from '@site/src/core/DocsRating';
 
-The goal of this document is to specify the assumptions that Relay makes about a GraphQL server and demonstrate them through an example GraphQL schema.
+이 문서의 목적은 릴레이가 GraphQL 서버에 대해 하는 가정을 설명하고, GraphQL 예제 스키마를 통해 그를 설명하기 위함입니다.
 
-Table of Contents:
+목차:
 
--   [Preface](#preface)
--   [Schema](#schema)
--   [Object Identification](#object-identification)
--   [Connections](#connections)
--   [Further Reading](#further-reading)
+-   [서론](#preface)
+-   [스키마](#schema)
+-   [객체 식별](#object-identification)
+-   [커넥션](#connections)
+-   [더 읽어보기](#further-reading)
 
-## Preface
+## 서론
 
-The two core assumptions that Relay makes about a GraphQL server are that it provides:
+릴레이는 GraphQL 서버가 다음 두 개를 제공한다고 가정합니다.
 
-1.  A mechanism for refetching an object.
-2.  A description of how to page through connections.
+1.  객체를 리페치하기 위한 구조
+2.  커넥션을 페이지네이션하는 방법에 대한 설명 
 
-This example demonstrates all two of these assumptions. This example is not comprehensive, but it is designed to quickly introduce these core assumptions, to provide some context before diving into the more detailed specification of the library.
+이 예제는 이 두 가정을 모두 설명합니다. 이 예제는 포괄적이진 않지만, 라이브러리의 자세한 스펙에 대해 파고 들어가기 전에 맥락을 조금 설명하기 위해, 이러한 핵심 가정을 빠르게 소개하도록 설계되었습니다.
 
-The premise of the example is that we want to use GraphQL to query for information about ships and factions in the original Star Wars trilogy.
+이 예제에서는 GraphQL을 사용하여 오리지널 스타워즈 3부작에 나오는 함선(ship)과 세력(faction)에 대한 정보를 쿼리합니다.
 
-It is assumed that the reader is already familiar with [GraphQL](http://graphql.org/); if not, the README for [GraphQL.js](https://github.com/graphql/graphql-js) is a good place to start.
+이 글을 읽는 여러분들이 이미 [GraphQL](http://graphql.org/)에 익숙하다고 가정합니다. 그렇지 않다면, [GraphQL.js](https://github.com/graphql/graphql-js)의 README부터 시작하면 좋습니다.
 
-It is also assumed that the reader is already familiar with [Star Wars](https://en.wikipedia.org/wiki/Star_Wars); if not, the 1977 version of Star Wars is a good place to start, though the 1997 Special Edition will serve for the purposes of this document.
+또한 여러분들이 [스타워즈](https://en.wikipedia.org/wiki/Star_Wars)에 익숙하다고 가정할 것입니다. 그렇지 않다면, 1977년 버전의 스타워즈를 보면 좋습니다. (1997년의 스타워즈 스페셜 에디션이 이 문서의 목적에 알맞긴 하지만요)
 
-## Schema
+## 스키마
 
-The schema described below will be used to demonstrate the functionality that a GraphQL server used by Relay should implement. The two core types are a faction and a ship in the Star Wars universe, where a faction has many ships associated with it.
+아래의 스키마는 릴레이에서 사용하는 GraphQL 서버가 구현해야 하는 기능을 설명하는 데에 사용됩니다. 두 가지 핵심 타입은 스타워즈 유니버스의 세력과 함선으로, 각 세력은 많은 함선을 가지고 있습니다.
+
 
 ```graphql
 interface Node {
@@ -80,13 +81,13 @@ type Query {
 }
 ```
 
-## Object Identification
+## 객체 식별
 
-Both `Faction` and `Ship` have identifiers that we can use to refetch them. We expose this capability to Relay through the `Node` interface and the `node` field on the root query type.
+`Faction`과 `Ship`은 그들을 리페치하는 데에 사용할 수 있는 식별자를 가집니다. 우리는 이 능력을 `Node` 인터페이스와 루트 쿼리 타입의 `node` 필드를 통해 릴레이에게 노출시킵니다. 
 
-The `Node` interface contains a single field, `id`, which is an `ID!`. The `node` root field takes a single argument, an `ID!`, and returns a `Node`. These two work in concert to allow refetching; if we pass the `id` returned in that field to the `node` field, we get the object back.
+`Node` 인터페이스는 `id`라는 필드 하나를 포함하고, 그 타입은 `ID!`입니다. `node` 루트 필드는 `ID!` 타입의 인자 하나를 받으며, `Node`를 반환합니다. 이 둘은 리페치를 가능하게 하기 위해 함께 작동합니다. 이전에 Node에서 받았던 `id`를 `node`에 넘기면, 그 객체를 다시 받습니다.
 
-Let's see this in action, and query for the ID of the rebels:
+이것을 실제로 해 봅시다. 반란 연합(rebels)의 ID를 쿼리해 봅시다.
 
 ```graphql
 query RebelsQuery {
@@ -97,7 +98,7 @@ query RebelsQuery {
 }
 ```
 
-returns
+이 쿼리는 아래 결과를 반환합니다.
 
 ```json
 {
@@ -108,7 +109,7 @@ returns
 }
 ```
 
-So now we know the ID of the Rebels in our system. We can now refetch them:
+반란 연합의 ID를 알았으니, 이제 이를 다시 가져올 수 있습니다.
 
 ```graphql
 query RebelsRefetchQuery {
@@ -121,7 +122,7 @@ query RebelsRefetchQuery {
 }
 ```
 
-returns
+이는 다음을 반환합니다.
 
 ```json
 {
@@ -132,7 +133,7 @@ returns
 }
 ```
 
-If we do the same thing with the Empire, we'll find that it returns a different ID, and we can refetch it as well:
+은하 제국(empire)에 대해서도 똑같이 하면, 다른 ID가 반환되는 것을 알 수 있습니다. 이 또한 다시 가져오기를 할 수 있습니다.
 
 ```graphql
 query EmpireQuery {
@@ -143,7 +144,7 @@ query EmpireQuery {
 }
 ```
 
-yields
+는 다음을 반환하고,
 
 ```json
 {
@@ -154,7 +155,7 @@ yields
 }
 ```
 
-and
+아래 쿼리는
 
 ```graphql
 query EmpireRefetchQuery {
@@ -167,7 +168,7 @@ query EmpireRefetchQuery {
 }
 ```
 
-yields
+이런 결과를 반환합니다.
 
 ```json
 {
@@ -178,17 +179,17 @@ yields
 }
 ```
 
-The `Node` interface and `node` field assume globally unique IDs for this refetching. A system without globally unique IDs can usually synthesize them by combining the type with the type-specific ID, which is what was done in this example.
+`Node` 인터페이스와 `node` 필드는 이런 다시 가져오기에 사용하는 ID가 전역적으로 유일하다고 가정합니다. 전역적으로 유일한 ID가 없는 시스템은 일반적으로 타입과 그 타입에서의 ID를 합쳐서 전역적으로 유일한 ID를 만들 수 있습니다. (이 예제에서도 그런 방법이 사용되었습니다.)
 
-The IDs we got back were base64 strings. IDs are designed to be opaque (the only thing that should be passed to the `id` argument on `node` is the unaltered result of querying `id` on some object in the system), and base64ing a string is a useful convention in GraphQL to remind viewers that the string is an opaque identifier.
+여기서 돌려받은 ID들은 base64 문자열입니다. ID는 불투명(즉, `node` 쿼리에 넣는 인자 `id`는 시스템의 어떤 객체를 조회해서 얻은 `id`를 바꾸지 않고 그대로 다시 사용해야 합니다)하도록 설계되었습니다. 문자열을 base64로 인코딩하면 보는 사람이 이 문자열이 불투명한 식별자라는 것을 알 수 있기 때문에, 이것은 GraphQL에서 사용하는 유용한 컨벤션입니다.
 
-Complete details on how the server should behave are available in the [GraphQL Object Identification](https://graphql.org/learn/global-object-identification/) best practices guide in the GraphQL site.
+서버가 어떻게 동작해야 하는지에 대한 모든 세부 사항은 [GraphQL 객체 식별](https://graphql.org/learn/global-object-identification/) 모범 사례 가이드에서 확인할 수 있습니다.
 
-## Connections
+## 커넥션
 
-A faction has many ships in the Star Wars universe. Relay contains functionality to make manipulating one-to-many relationships easy, using a standardized way of expressing these one-to-many relationships. This standard connection model offers ways of slicing and paginating through the connection.
+스타워즈 유니버스에서 세력은 여러 함선을 가지고 있습니다. 릴레이에는 일대다 관계를 표현하는 표준화된 방법을 통하여 그러한 일대다 관계를 쉽게 조작하도록 만드는 기능이 있습니다. 이 표준 커넥션 모델은 커넥션을 페이지네이션하고, 자르는 방법을 제공합니다. 
 
-Let's take the rebels, and ask for their first ship:
+반란 연합을 예로 들어서, 그들의 첫 번째 함선이 뭔지 물어봅시다.
 
 ```graphql
 query RebelsShipsQuery {
@@ -205,7 +206,7 @@ query RebelsShipsQuery {
 }
 ```
 
-yields
+결과:
 
 ```json
 {
@@ -224,7 +225,7 @@ yields
 }
 ```
 
-That used the `first` argument to `ships` to slice the result set down to the first one. But what if we wanted to paginate through it? On each edge, a cursor will be exposed that we can use to paginate. Let's ask for the first two this time, and get the cursor as well:
+결과에서 첫 번째 하나만 자르기 위해 `ships`의 `first` 인자를 사용했습니다. 여기서 페이지네이션을 하고 싶다면 어떻게 할까요? 각 엣지에는 페이지네이션에 사용할 수 있는 커서가 제공됩니다. 이번엔 첫 두 개를 요청하면서 커서도 받아봅시다.
 
 ```
 query MoreRebelShipsQuery {
@@ -242,7 +243,7 @@ query MoreRebelShipsQuery {
 }
 ```
 
-and we get back
+결과는 다음과 같습니다.
 
 ```json
 
@@ -269,7 +270,7 @@ and we get back
 }
 ```
 
-Notice that the cursor is a base64 string. That's the pattern from earlier: the server is reminding us that this is an opaque string. We can pass this string back to the server as the `after` argument to the `ships` field, which will let us ask for the next three ships after the last one in the previous result:
+커서가 base64 문자열이라는 것에 주목하세요. 이는 앞에서 봤던 패턴과 같습니다. 서버는 우리에게 이것이 불투명한 문자열이라는 것을 알려주고 있습니다. 우리는 이 문자열을 `ships` 필드의 `after` 인자에 넣어서 서버에 다시 넘길 수 있습니다. 이렇게 하면 이전 결과의 마지막 함선 다음의 함선 3개를 요청할 수 있습니다.
 
 ```
 
@@ -288,7 +289,7 @@ query EndOfRebelShipsQuery {
 }
 ```
 
-gives us
+결과는 다음과 같습니다.
 
 ```json
 
@@ -322,7 +323,7 @@ gives us
 }
 ```
 
-Sweet! Let's keep going and get the next four!
+좋네요! 계속해서 다음 4개를 받아 봅시다.
 
 ```graphql
 query RebelsQuery {
@@ -340,7 +341,6 @@ query RebelsQuery {
 }
 ```
 
-yields
 
 ```json
 {
@@ -353,7 +353,7 @@ yields
 }
 ```
 
-Hm. There were no more ships; guess there were only five in the system for the rebels. It would have been nice to know that we'd reached the end of the connection, without having to do another round trip in order to verify that. The connection model exposes this capability with a type called `PageInfo`. So let's issue the two queries that got us ships again, but this time ask for `hasNextPage`:
+흠. 더 이상 없네요. 반란 연합의 함선은 5개 밖에 없었던 것 같습니다. 이렇게 서버에 한번 더 다녀와서 확인하지 않고도 커넥션의 마지막에 다다랐다는 것을 미리 알았다면 좋았을 것입니다. 커넥션 모델은 `PageInfo`라는 타입을 통해 이를 지원합니다. 함선을 조회하기 위해 썼던 두 쿼리를 다시 써 봅시다. 이번에는 `hasNextPage`도 요청하고요.
 
 ```graphql
 query EndOfRebelShipsQuery {
@@ -383,7 +383,7 @@ query EndOfRebelShipsQuery {
 }
 ```
 
-and we get back
+결과는 다음과 같습니다.
 
 ```json
 {
@@ -432,16 +432,17 @@ and we get back
 }
 ```
 
-So on the first query for ships, GraphQL told us there was a next page, but on the next one, it told us we'd reached the end of the connection.
+첫 번째 쿼리에서는 다음 페이지가 있다고 알려주지만, 그 다음 쿼리에서는 커넥션의 마지막에 도달했다고 알려줍니다.
 
-Relay uses all of this functionality to build out abstractions around connections, to make these easy to work with efficiently without having to manually manage cursors on the client.
+릴레이는 커넥션에 대한 추상화를 구축하기 위해 이 모든 기능을 사용하고, 클라이언트에서 커서를 직접 관리할 필요 없이 효율적으로 동작하는 것을 쉽게 만들어 줍니다.
 
-Complete details on how the server should behave are available in the [GraphQL Cursor Connections](https://relay.dev/graphql/connections.htm) spec.
+서버가 동작해야 하는 방식에 대한 전체 세부 사항은 [GraphQL 커서 커넥션](https://relay.dev/graphql/connections.htm) 스펙을 참조하세요.
 
-## Further Reading
+## 더 읽을 거리
 
-This concludes the overview of the GraphQL Server Specifications. For the detailed requirements of a Relay-compliant GraphQL server, a more formal description of the [Relay cursor connection](https://relay.dev/graphql/connections.htm) model, the [GraphQL global object identification](https://graphql.org/learn/global-object-identification/) model are all available.
 
-To see code implementing the specification, the [GraphQL.js Relay library](https://github.com/graphql/graphql-relay-js) provides helper functions for creating nodes and connections; that repository's [`__tests__`](https://github.com/graphql/graphql-relay-js/tree/main/src/__tests__) folder contains an implementation of the above example as integration tests for the repository.
+이로써 GraphQL 서버 스펙의 개요를 마치겠습니다. 릴레이를 준수하는 GraphQL 서버의 자세한 요구 사항에 대해서는, [릴레이 커서 커넥션](https://relay.dev/graphql/connections.htm) 모델과 [GraphQL 전역 객체 식별](https://graphql.org/learn/global-object-identification/) 모델의 더 공식적인 설명이 제공됩니다.
+
+이 스펙을 구현하는 코드를 보려면, [GraphQL.js 릴레이 라이브러리](https://github.com/graphql/graphql-relay-js) 가 노드와 커넥션을 만드는 헬퍼 함수를 제공합니다. 그 레포지터리의 [`__tests__`](https://github.com/graphql/graphql-relay-js/tree/main/src/__tests__) 폴더에는 위의 예시에 대한 구현이 통합 테스트의 형태로 들어 있습니다.
 
 <DocsRating />
