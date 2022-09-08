@@ -15,17 +15,17 @@ import {OssOnly, FbInternalOnly} from 'internaldocs-fb-helpers';
 
 <FbInternalOnly>
 
-Additionally, we can combine `usePaginationFragment` with Relay's [Incremental Data Delivery](../../../guides/incremental-data-delivery/) capabilities in order to fetch a connection and incrementally receive each item in the connection as it becomes ready, instead of waiting for the whole list of items to be returned in a single payload. This can be useful when for example computing each item in the connection is an expensive operation in the server, and we want to be able to show the first item(s) in the list as soon as possible without blocking on *all* the items that we need to become available; for example, on News Feed a user could ideally see and start interacting with the first story while additional stories loaded in below.
+추가적으로, `usePaginationFragment`를 릴레이의 [Incremental Data Delivery](../../../guides/incremental-data-delivery/) 기능과 조합할 수 있습니다. 전체 아이템 리스트가 하나의 페이로드에 통째로 담겨서 반환되기를 기다리는 대신에, 커넥션을 가져올 때 각 아이템이 준비되기 시작하면 점진적으로 받기 위해서입니다. 이는 예를 들어 커넥션의 각 아이템을 계산하는 것이 서버 비용이 큰 작업인데, *모든* 아이템이 사용 가능해지는 걸 기다리지 말고 첫 번째 아이템이 준비되면 바로 보여주고 싶을 때 유용할 수 있습니다. 예를 들어 이상적으로 유저가 첫 스토리를 보고, 다른 스토리들은 밑에서 로딩되는 동안 상호작용을 시작할 수 있는 뉴스피드가 있을 것입니다.
 
 </FbInternalOnly>
 
 <OssOnly>
 
-Additionally, we can combine `usePaginationFragment` with Relay's Incremental Data Delivery capabilities in order to fetch a connection and incrementally receive each item in the connection as it becomes ready, instead of waiting for the whole list of items to be returned in a single payload. This can be useful when for example computing each item in the connection is an expensive operation in the server, and we want to be able to show the first item(s) in the list as soon as possible without blocking on *all* the items that we need to become available; for example, on News Feed a user could ideally see and start interacting with the first story while additional stories loaded in below.
+추가적으로, `usePaginationFragment`를 릴레이의 "점진적 데이터 전달" 기능과 조합할 수 있습니다. 전체 아이템 리스트가 하나의 페이로드에 통째로 담겨서 반환되기를 기다리는 대신에, 커넥션을 가져올 때 각 아이템이 준비되기 시작하면 점진적으로 받기 위해서입니다. 이는 예를 들어 커넥션의 각 아이템을 계산하는 것이 서버 비용이 큰 작업인데, *모든* 아이템이 사용 가능해지는 걸 기다리지 말고 첫 번째 아이템이 준비되면 바로 보여주고 싶을 때 유용할 수 있습니다. 예를 들어 이상적으로 유저가 첫 스토리를 보고, 다른 스토리들은 밑에서 로딩되는 동안 상호작용을 시작할 수 있는 뉴스피드가 있을 것입니다.
 
 </OssOnly>
 
-In order to do so, we can use the `@stream_connection` directive instead of the `@connection` directive:
+이를 위해서는 `@connection` 지시자 대신에 `@stream_connection` 지시자를 사용하면 됩니다.
 
 ```js
 import type {FriendsListPaginationQuery} from 'FriendsListPaginationQuery.graphql';
@@ -71,16 +71,16 @@ function FriendsListComponent(props: Props) {
 module.exports = FriendsListComponent;
 ```
 
-Let's distill what's happening here:
+무슨 일이 일어나는지 봅시다.
 
-* The `@stream_connection` directive can be used directly in place of the `@connection` directive; it accepts the same arguments as @connection plus additional, *optional* parameters to control streaming:
-    * `initial_count: Int`: A number (defaulting to zero) that controls how many items will be included in the initial payload. Any subsequent items are streamed, so when set to zero the list will initially be empty and all items will be streamed. Note that this number does not affect how many items are returned *total*, only how many items are included in the initial payload. For example, consider a product that today makes an initial fetch for 2 items and then *immediately* issues a pagination query to fetch 3 more. With streaming, this product could instead choose to fetch 5 items in the initial query with initial_count=2, in order to fetch the 2 items quickly while avoiding a round trip for the subsequent 3 items.
-* As with regular usage of `usePaginationFragment`, the connection will be automatically updated as new items are streamed in from the server, and the component will re-render each time with the latest items in the connection.
+* `@stream_connection` 지시자는 `@connection` 지시자 자리에 바로 사용될 수 있습니다. 이는 @connection과 같은 인자를 받으며, 추가로 스트리밍을 제어하기 위한 선택적인 파라미터를 받습니다.
+    * `initial_count: Int`: 첫 페이로드에 포함될 아이템 개수를 제어하는 수 (기본값 0). 그 다음의 아이템들은 스트리밍되므로, 0으로 설정되면 첫 리스트는 비고 모든 아이템이 스트리밍될 것입니다. 이 수는 반환될 전체 아이템 수에는 영향을 끼치지 않고, 첫 페이로드에 담길 아이템에 수에만 영향을 끼친다는 것에 주의하세요. 예를 들어, 오늘은 처음에 두 개만 가져오고, 즉시 3개를 더 가져오는 페이지네이션 쿼리를 날리는 프로덕트를 생각해 보세요. 스트리밍을 쓰면, 이 프로덕트는 대신 첫 쿼리에서 아이템 5개를 가져오는데, initial_count=2으로 첫 두 아이템은 빠르게 가져오고, 다음 아이템 3개에 대해 서버에 한번 더 다녀오는 것은 피할 것입니다.
+* `usePaginationFragment`의 일반적인 사용처럼, 커넥션은 새 아이템이 서버로부터 스트리밍되면 자동으로 업데이트될 것이고, 컴포넌트는 커넥션의 최신 아이템으로 매번 재렌더링될 것입니다.
 
 
 <FbInternalOnly>
 
-For more information, see our docs on [Incremental Data Delivery](../../../guides/incremental-data-delivery/#stream_connection).
+더 알고 싶다면, [Incremental Data Delivery](../../../guides/incremental-data-delivery/#stream_connection)을 읽어 보세요.
 
 </FbInternalOnly>
 
