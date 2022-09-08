@@ -12,7 +12,7 @@ import DocsRating from '@site/src/core/DocsRating';
 import {OssOnly, FbInternalOnly} from 'internaldocs-fb-helpers';
 import FbPaginationUsingUseTransition from './fb/FbPaginationUsingUseTransition.md';
 
-To actually perform pagination over the connection, we need use the `loadNext` function to fetch the next page of items, which is available from `usePaginationFragment`:
+커넥션에 대해 페이지네이션을 실제로 수행하려면, `usePaginationFragment`가 제공하는 `loadNext` 함수를 써서 다음 페이지를 가져와야 합니다.
 
 <FbInternalOnly>
   <FbPaginationUsingUseTransition />
@@ -81,16 +81,16 @@ function FriendsListComponent(props: Props) {
 module.exports = FriendsListComponent;
 ```
 
-Let's distill what's happening here:
+여기서 무엇이 일어나는지를 분석해 봅시다.
 
-* `loadNext` takes a count to specify how many more items in the connection to fetch from the server. In this case, when `loadNext` is called we'll fetch the next 10 friends in the friends list of our currently rendered `User`.
-* When the request to fetch the next items completes, the connection will be automatically updated and the component will re-render with the latest items in the connection. In our case, this means that the `friends` field will always contain *all* of the friends that we've fetched so far. By default, *Relay will automatically append new items to the connection upon completing a pagination request,* and will make them available to your fragment component*.* If you need a different behavior, check out our [Advanced Pagination Use Cases](../advanced-pagination/) section.
-* `loadNext` may cause the component or new children components to suspend (as explained in [Loading States with Suspense](../../rendering/loading-states/)). This means that you'll need to make sure that there's a `Suspense` boundary wrapping this component from above.
+* `loadNext`는 커넥션에서 더 가져올 아이템 개수를 받습니다. 위의 예시에서는 `loadNext`를 부르면 현재 렌더링된 `User`의 친구 목록에서 다음 10명의 친구를 가져올 것입니다.
+* 다음 아이템들을 가져오는 요청이 완료되면, 커넥션 변수는 자동으로 업데이트되고 컴포넌트는 그 커넥션의 최신 아이템들을 가지고 재렌더링될 것입니다.  이는 위 예시의 `friends` 필드가 언제나 지금까지 가져온 *모든* 친구들을 담고 있다는 것을 의미합니다. 기본적으로, *릴레이는 페이지네이션 요청을 완료하면 자동으로 새 아이템들을 커넥션에 추가하고,* 프래그먼트 컴포넌트에서 사용할 수 있도록 만듭니다. 다른 동작이 필요하다면, [Advanced Pagination Use Cases](../advanced-pagination/) 섹션을 참고하세요.
+* `loadNext`는 자신이 불린 컴포넌트나 새 자식 컴포넌트들을 중단시킬(suspend) 수 있습니다 ([Loading States with Suspense](../../rendering/loading-states/)에서 설명된 것처럼). 이는 이 컴포넌트를 위에서 감싸는 `Suspense` 바운더리를 꼭 만들어야 한다는 것을 의미합니다.
 
 </OssOnly>
 
 
-Often, you will also want to access information about whether there are more items available to load. To do this, you can use the `hasNext` value, also available from `usePaginationFragment`:
+또한 보통 여기서 더 가져올 아이템이 있는지 알고 싶을 것입니다. 이를 위해서는 `hasNext` 값을 사용할 수 있습니다. 이 값 또한 `usePaginationFragment`에서 얻을 수 있습니다.
 
 ```js
 import type {FriendsListPaginationQuery} from 'FriendsListPaginationQuery.graphql';
@@ -135,7 +135,7 @@ function FriendsListComponent(props: Props) {
 module.exports = FriendsListComponent;
 ```
 
-* `hasNext` is a boolean which indicates if the connection has more items available. This information can be useful for determining if different UI controls should be rendered. In our specific case, we only render the `Button` if there are more friends available in the connection.
+* `hasNext`는 커넥션에서 가져올 수 있는 아이템이 더 있는지를 나타내는 참/거짓 값입니다. 이 값은 다른 UI 컨트롤이 렌더링되어야 하는지를 결정하는 데에도 유용할 수 있습니다. 위의 예시에서는 커넥션에 친구가 더 있다면 `Button`을 렌더링합니다.
 
 
 
