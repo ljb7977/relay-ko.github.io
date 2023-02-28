@@ -1,6 +1,6 @@
 ---
 id: updating-connections
-title: Updating Connections
+title: 커넥션 업데이트하기
 slug: /guided-tour/list-data/updating-connections/
 description: Relay guide to updating connections
 keywords:
@@ -13,16 +13,16 @@ keywords:
 import DocsRating from '@site/src/core/DocsRating';
 import {OssOnly, FbInternalOnly} from 'internaldocs-fb-helpers';
 
-Usually when you're rendering a connection, you'll also want to be able to add or remove items to/from the connection in response to user actions.
+보통 커넥션을 렌더링할 때, 유저 행동에 따라 커넥션에 아이템을 추가하거나 제거하고 싶을 수 있습니다.
 
-As explained in our [Updating Data](../../updating-data/) section, Relay holds a local in-memory store of normalized GraphQL data, where records are stored by their IDs.  When creating mutations, subscriptions, or local data updates with Relay, you must provide an [`updater`](../../updating-data/graphql-mutations/#updater-functions) function, inside which you can access and read records, as well as write and make updates to them. When records are updated, any components affected by the updated data will be notified and re-rendered.
+[Updating Data](../../updating-data/) 섹션에 설명된 것처럼, 릴레이는 정규화된 GraphQL 데이터에 대한 로컬 인메모리 스토어를 유지합니다. 이 스토어 안에는 레코드가 ID 기준으로 저장됩니다. 뮤테이션, 구독, 로컬 데이터 업데이트가 일어날 때, [`updater`](../../updating-data/graphql-mutations/#updater-functions) 함수를 제공해야만 합니다. 이 함수 안에서는 레코드에 접근하고 읽을 수 있고, 그들에 대해 쓰기와 업데이트도 할 수 있습니다. 레코드가 업데이트되면, 업데이트된 데이터에 영향을 받는 모든 컴포넌트는 알림을 받고 재렌더링될 것입니다.
 
 
-## Connection Records
+## 커넥션 레코드
 
-In Relay, connection fields that are marked with the `@connection` directive are stored as special records in the store, and they hold and accumulate *all* of the items that have been fetched for the connection so far. In order to add or remove items from a connection, we need to access the connection record using the connection `key`, which was provided when declaring a `@connection`; specifically, this allows us to access a connection inside an [`updater`](../../updating-data/graphql-mutations/#updater-functions) function using the `ConnectionHandler` APIs.
+릴레이에서 `@connection` 지시자가 붙은 커넥션 필드는 스토어에 특별한 레코드로 저장되며, 그 커넥션에 대해 지금까지 가져와진 모든 아이템을 쌓아서 들고 있습니다. 커넥션에 아이템을 추가하고 제거하려면 `@connection`을 선언할 때 넘기는 커넥션 키를 사용하여 커넥션 레코드에 접근해야 합니다. 더 자세히 말하자면, 커넥션 키를 가지고 [`updater`](../../updating-data/graphql-mutations/#updater-functions) 함수 안에서 `ConnectionHandler` API를 사용하여 커넥션에 접근할 수 있습니다.
 
-For example, given the following fragment that declares a `@connection`, we can access the connection record inside an `updater` function in a few different ways:
+예를 들어, `@connection` 선언을 가지는 다음과 같은 프래그먼트가 주어졌다고 해 봅시다. 이러면 `updater` 함수 안에서 커넥션 레코드에 여러 방법으로 접근할 수 있습니다.
 
 ```js
 const {graphql} = require('react-relay');
@@ -40,9 +40,9 @@ const storyFragment = graphql`
 `;
 ```
 
-### Accessing connections using `__id`
+### `__id`를 사용하여 커넥션에 접근하기
 
-We can query for a connection's `__id` field, and then use that `__id` to access the record in the store:
+커넥션의 `__id` 필드를 쿼리할 수 있고, 그를 사용하여 스토어의 레코드에 접근할 수 있습니다.
 
 ```js
 const fragmentData = useFragment(
@@ -59,28 +59,28 @@ const fragmentData = useFragment(
   props.story,
 );
 
-// Get the connection record id
+// 커넥션 레코드 ID 얻기
 const connectionID = fragmentData?.comments?.__id;
 ```
 
-Then use it to access the record in the store:
+그를 이용하여 스토어의 레코드에 접근할 수 있습니다.
 
 ```js
 function updater(store: RecordSourceSelectorProxy) {
-  // connectionID is passed as input to the mutation/subscription
+  // connectionID는 뮤테이션/구독에 입력으로 넘겨집니다.
   const connection = store.get(connectionID);
 
   // ...
 }
 ```
 
-:::note
-The `__id` field is **NOT** something that your GraphQL API needs to expose. Instead, it's an identifier that Relay automatically adds to identify the connection record.
+:::참고
+`__id` 필드는 GraphQL API가 노출해야 하는 것이 **아닙니다**. 이 필드는 릴레이가 자동으로 커넥션 레코드를 식별하기 위해 추가하는 식별자입니다.
 :::
 
-### Accessing connections using `ConnectionHandler.getConnectionID`
+### `ConnectionHandler.getConnectionID`를 사용하여 커넥션에 접근하기
 
-If we have access to the ID of the parent record that holds the connection, we can access the connection record by using the `ConnectionHandler.getConnectionID` API:
+만약 커넥션의 부모 레코드 ID를 안다면, `ConnectionHandler.getConnectionID` API를 사용하여 커넥션 레코드에 접근할 수 있습니다.
 
 ```js
 const {ConnectionHandler} = require('relay-runtime');
@@ -99,9 +99,9 @@ function updater(store: RecordSourceSelectorProxy) {
 }
 ```
 
-### Accessing connections using `ConnectionHandler.getConnection`
+### `ConnectionHandler.getConnection`을 사용하여 커넥션에 접근하기
 
-If we have access to the parent record that holds the connection, we can access the connection record via the parent, by using the `ConnectionHandler.getConnection` API:
+커넥션의 부모 레코드에 접근할 수 있다면, `ConnectionHandler.getConnection` API를 사용하여 그 부모를 통해 커넥션에 접근할 수 있습니다.
 
 ```js
 const {ConnectionHandler} = require('relay-runtime');
@@ -121,15 +121,15 @@ function updater(store: RecordSourceSelectorProxy) {
 }
 ```
 
-## Adding edges
+## 엣지 추가하기
 
-There are a couple of alternatives for adding edges to a connection:
+커넥션에 엣지를 추가하는 방법은 여러 개가 있습니다.
 
-### Using declarative directives
+### 선언적인 지시자 사용하기
 
-Usually, mutation or subscription payloads will expose the new edges that were added on the server as a field with a single edge or list of edges. If your mutation or subscription exposes an edge or edges field that you can query for in the response, then you can use the `@appendEdge` and `@prependEdge` declarative mutation directives on that field in order to add the newly created edges to the specified connections (note that these directives also work on queries).
+보통, 뮤테이션이나 구독 페이로드는 서버에서 추가된 새로운 엣지 혹은 엣지 리스트를 필드로서 노출할 것입니다. 만약 뮤테이션이나 구독이 엣지 필드를 응답에 노출한다면, 그 필드에 `@appendEdge`와 `@prependEdge`라는 선언전 뮤테이션 지시자를 사용할 수 있습니다. 이를 통해 새로 추가된 엣지를 지정된 커넥션에 추가할 수 있습니다. (이 지시자는 쿼리에 대해서도 동작합니다).
 
-Alternatively, mutation or subscription payloads might expose the new nodes that were added on the server as a field with a single node or list of nodes. If your mutation or subscription exposes a node or nodes field that you can query for in the response, then you can use the `@appendNode` and `@prependNode` declarative mutation directives on that field in order to add the newly created nodes, wrapped inside edges, to the specified connections (note that these directives also work on queries).
+이 대신에, 뮤테이션이나 구독 페이로드는 서버에서 추가된 새로운 노드나 노드의 리스트를 필드로서 노출할 수 있습니다. 만약 뮤테이션이나 구독이 노드나 노드 리스트 필드를 응답에 노출한다면, 그 필드에 `@appendNode` and `@prependNode`라는 선언적 뮤테이션 지시자를 사용할 수 있습니다. 이를 통해 새로 추가된 노드를 엣지로 감싸서 지정된 커넥션에 추가할 수 있습니다. (이 지시자는 쿼리에 대해서도 동작합니다).
 
 These directives accept a `connections` parameter, which needs to be a GraphQL variable containing an array of connection IDs. Connection IDs can be obtained either by using the [`__id` field on connections](#accessing-connections-using-__id) or using the [`ConnectionHandler.getConnectionID`](#accessing-connections-using-connectionhandlergetconnectionid) API.
 
